@@ -1,3 +1,4 @@
+from email import message
 from tkinter import *
 import tkinter.messagebox
 from PIL import Image, ImageTk
@@ -112,20 +113,54 @@ class Client:
 	
 	def parseRtspReply(self, data):
 		"""Parse the RTSP reply from the server."""
-		#TODO
-	
+		#get data from message
+		dataLines = data.decode().split('\n')
+		seqNumber = int (dataLines[2].split(' ')[1])
+
+		#Check if server reply's sequence number is the same as request's sequence number
+		if seqNumber == self.rtspSeq:
+			sessionNumber = int (dataLines[2].split(' ')[1])
+			#check if reply of first request
+			if self.sessionId == 0:
+				self.sessionId = sessionNumber
+			status = int (dataLines[0].split(' ')[1])
+			if self.sessionId == sessionNumber and status == 200:
+				if self.requestSent == self.SETUP:
+					self.state = self.READY
+					self.openRtpPort()
+				elif self.requestSent == self.PLAY:
+					self.state = self.PLAYING
+				elif self.requestSent == self.PAUSE:
+					self.state = self.READY
+					self.playEvent.set()
+				elif self.requestSent == self.TEARDOWN:
+					self.state == self.INIT
+					self.teardownAcked = 1
 	def openRtpPort(self):
 		"""Open RTP socket binded to a specified port."""
 		#-------------
 		# TO COMPLETE
 		#-------------
 		# Create a new datagram socket to receive RTP packets from the server
+
+		self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		# self.rtpSocket = ...
 		
 		# Set the timeout value of the socket to 0.5sec
-		# ...
-		
+		self.rtpSocket.settimeout(0.5)
+		# Try to bind socket to the address using given RTP port
+		try:
+			self.state = self.READY
+			self.rtpSocket.bind(*'',self.rtpPort)
+		except:
+			tkinter.messagebox.messagebox.showwarning('Unable to bind PORT={}').format(self.rtpPort)
 
 	def handler(self):
 		"""Handler on explicitly closing the GUI window."""
 		#TODO
+		self.pauseMovie()
+		if tkinter.messagebox.messagebox.askokcancel("Quit?", "Do you want to quit?"):
+			self.exitClient()
+		else:
+			#resume playing when user cancel.
+			self.playMovie()
