@@ -93,7 +93,10 @@ class Client:
 		"""Teardown button handler."""
 		self.sendRtspRequest(self.TEARDOWN)
 		self.master.destroy()
-		os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT)
+		try:
+			os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT)
+		except:
+			pass
 
 	def pauseMovie(self):
 		"""Pause button handler."""
@@ -194,7 +197,7 @@ class Client:
 			self.rtspSeq -= 1
 			return
 		self.rtspSocket.send(request.encode())
-		print('\nData sent:\n' + request)
+		print('\nData sent:\n' + request + '\n')
 
 	def recvRtspReply(self):
 		"""Receive RTSP reply from the server."""
