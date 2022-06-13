@@ -2,4 +2,4 @@ This folder contains the extension 3
 
 python Server.py 1200
 
-python ClientLauncher.py DESKTOP-NE70A7B 1200 80 movie.Mjpeg
+python ClientLauncher.py DESKTOP-NE70A7B 1200 80 movie.Mjpeg 
