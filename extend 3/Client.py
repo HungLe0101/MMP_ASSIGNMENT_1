@@ -243,6 +243,8 @@ class Client:
 					self.teardownAcked = 1
 
 				elif self.requestSent == self.DESCRIBE:
+					self.state = self.READY
+					self.playEvent.set()
 					respone_message = data.split(b'\r\n')
 					info = "Protocol: {}\nFile type: {}".format(respone_message[-2][2:].decode(), respone_message[-1][2:].decode())
 					messagebox.showinfo("Information: ", info)

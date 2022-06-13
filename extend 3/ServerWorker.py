@@ -35,8 +35,11 @@ class ServerWorker:
 		while True:            
 			data = connSocket.recv(256)
 			if data:
-				print("Data received:\n" + data.decode("utf-8"))
-				self.processRtspRequest(data.decode("utf-8"))
+				print("\nData received:\n" + data.decode("utf-8") + '\n')
+				try:
+					self.processRtspRequest(data.decode("utf-8"))
+				except:
+					pass
 	
 	def processRtspRequest(self, data):
 		"""Process RTSP request sent from the client."""
@@ -101,16 +104,22 @@ class ServerWorker:
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
 			print("processing TEARDOWN\n")
-
 			self.clientInfo['event'].set()
-			
 			self.replyRtsp(self.OK_200, seq[1])
 			
 			# Close the RTP socket
-			self.clientInfo['rtpSocket'].close()
+			try:
+				self.clientInfo['rtpSocket'].close()
+			except:
+				pass
 		#Process DESCRIBE request
 		elif requestType == self.DESCRIBE:
-			print("processin DESCRIBE\n")	
+			if self.state == self.PLAYING:
+				print("processing PAUSE\n")
+				self.state = self.READY
+				self.clientInfo['event'].set()
+			
+			print("processing DESCRIBE\n")	
 			descriptionMessage = "v=0\r\ns={}\r\na=Real Time Streaming Protocol (RTSP)\r\na=Motion JPEG (M-JPEG/MJPEG)".format(self.clientInfo['session'])
 			self.replyRtsp(self.OK_200, seq[1], descriptionMessage)
 	def sendRtp(self):
@@ -127,7 +136,7 @@ class ServerWorker:
 				frameNumber = self.clientInfo['videoStream'].frameNbr()
 				try:
 					address = self.clientInfo['rtspSocket'][1][0]
-					print("Frame number: ", frameNumber)
+					print("Sent frame", frameNumber)
 					port = int(self.clientInfo['rtpPort'])
 					self.clientInfo['rtpSocket'].sendto(self.makeRtp(data, frameNumber),(address,port))
 				except:
@@ -155,10 +164,9 @@ class ServerWorker:
 			reply = 'RTSP/1.0 200 OK\nCSeq: ' + seq + '\nSession: ' + str(self.clientInfo['session'])
 			if data != None: #in case describe request
 				reply += '\n\n' + data
-
 			connSocket = self.clientInfo['rtspSocket'][0]
 			connSocket.send(reply.encode())
-		
+			print("Data sent: \n" + reply)
 		# Error messages
 		elif code == self.FILE_NOT_FOUND_404:
 			print("404 NOT FOUND")
