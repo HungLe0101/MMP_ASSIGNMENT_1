@@ -1,1 +1,13 @@
-This folder contains the extension 3
+# Video-Streaming-with-RTSP-and-RTP
+Socket Programming in Python for video streaming with RTSP and RTP protocols.
+Will update it soon.
+
+1) python Server.py 1300
+2) python ClientLauncher.py name_server 1300 5000 movie.Mjpeg
+
+
+# How to determine name_server
+
+1. Open Terminal
+2. Type: ipconfig /all
+3. name_server is your Host Name
